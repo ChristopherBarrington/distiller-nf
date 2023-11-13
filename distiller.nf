@@ -551,7 +551,7 @@ process merge_dedup_splitbam {
     def dedup_options = params['dedup'].get('dedup_options','')
     def keep_dups = params['dedup'].get('keep_dups', 'false').toBoolean()
 
-    if(make_pairsam)
+    if(make_pairsam) {
         def output_dups_args = '-'
         if(!keep_dups)
             output_dups_args = ">( pairtools split --output-pairs ${library}.${ASSEMBLY_NAME}.dups.pairs.gz --output-sam ${library}.${ASSEMBLY_NAME}.dups.bam )"
@@ -581,7 +581,7 @@ process merge_dedup_splitbam {
         rm -rf \$TASK_TMP_DIR
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
-    else
+    } else {
         def output_dups_args = '-'
         if(!keep_dups)
             output_dups_args = "${library}.${ASSEMBLY_NAME}.dups.pairs.gz"
@@ -605,6 +605,7 @@ process merge_dedup_splitbam {
         rm -rf \$TASK_TMP_DIR
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
+    }
 }
 
 LIB_PAIRS_BAMS
