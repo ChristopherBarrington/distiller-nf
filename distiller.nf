@@ -549,6 +549,7 @@ process merge_dedup_splitbam {
         "pairtools merge ${run_pairsam} --nproc ${task.cpus} --tmpdir \$TASK_TMP_DIR"
     )
     def dedup_options = params['dedup'].get('dedup_options','')
+    def keep_dups = params['dedup'].get('keep_dups', 'false').toBoolean()
 
     if(make_pairsam)
         """
