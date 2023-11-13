@@ -552,6 +552,9 @@ process merge_dedup_splitbam {
     def keep_dups = params['dedup'].get('keep_dups', 'false').toBoolean()
 
     if(make_pairsam)
+        def output_dups_args = '-'
+        if(!keep_dups)
+            output_dups_args = ">( pairtools split --output-pairs ${library}.${ASSEMBLY_NAME}.dups.pairs.gz --output-sam ${library}.${ASSEMBLY_NAME}.dups.bam )"
         """
         TASK_TMP_DIR=\$(mktemp -d -p ${task.distillerTmpDir} distiller.tmp.XXXXXXXXXX)
 
@@ -568,18 +571,20 @@ process merge_dedup_splitbam {
                     --output-pairs ${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz \
                     --output-sam ${library}.${ASSEMBLY_NAME}.unmapped.bam \
                  ) \
-            --output-dups \
-                >( pairtools split \
-                    --output-pairs ${library}.${ASSEMBLY_NAME}.dups.pairs.gz \
-                    --output-sam ${library}.${ASSEMBLY_NAME}.dups.bam \
-                 ) \
+            --output-dups ${output_dups_args} \
             --output-stats ${library}.${ASSEMBLY_NAME}.dedup.stats \
             | cat
+
+        touch ${library}.${ASSEMBLY_NAME}.dups.pairs.gz
+        touch ${library}.${ASSEMBLY_NAME}.dups.bam
 
         rm -rf \$TASK_TMP_DIR
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
     else
+        def output_dups_args = '-'
+        if(!keep_dups)
+            output_dups_args = "${library}.${ASSEMBLY_NAME}.dups.pairs.gz"
         """
         TASK_TMP_DIR=\$(mktemp -d -p ${task.distillerTmpDir} distiller.tmp.XXXXXXXXXX)
 
@@ -588,13 +593,14 @@ process merge_dedup_splitbam {
             --mark-dups \
             --output ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz \
             --output-unmapped ${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz \
-            --output-dups ${library}.${ASSEMBLY_NAME}.dups.pairs.gz \
+            --output-dups ${output_dups_args} \
             --output-stats ${library}.${ASSEMBLY_NAME}.dedup.stats \
             | cat
 
         touch ${library}.${ASSEMBLY_NAME}.unmapped.bam
         touch ${library}.${ASSEMBLY_NAME}.nodups.bam
         touch ${library}.${ASSEMBLY_NAME}.dups.bam
+        touch ${library}.${ASSEMBLY_NAME}.dups.pairs.gz
 
         rm -rf \$TASK_TMP_DIR
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
