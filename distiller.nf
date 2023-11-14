@@ -522,7 +522,7 @@ process map_parse_sort_chunks {
 LIB_RUN_CHUNK_PAIRSAMS
     .map {library, run, chunk, pairsam, bam -> tuple(library, pairsam)}
     .groupTuple()
-    .set {LIB_PAIRSAMS_TO_MERGE}
+    .set {LIB_PAIRSAMS_TO_MERGE,LIB_PAIRSAMS_TO_MERGE_DEDUP}
 
 process merge_split {
     tag "library:${library}"
@@ -578,7 +578,7 @@ process merge_dedup_splitbam {
     when: params['dedup'].get('keep_dups','false').toBoolean() == false
 
     input:
-    set val(library), file(run_pairsam) from LIB_PAIRSAMS_TO_MERGE
+    set val(library), file(run_pairsam) from LIB_PAIRSAMS_TO_MERGE_DEDUP
 
     output:
     set library, "${library}.${ASSEMBLY_NAME}.nodups.pairs.gz",
