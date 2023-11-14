@@ -178,6 +178,12 @@ dedup:
     # Note that on cluster the job can be "Killed" if the task uses more than the memory limit.
     dedup_options: ''
 
+    # Specify whether to output duplicates into the same file as non-duplicates. May be used when
+    # input FastQ sequences have been parsed before alignment to remove potential PCR duplicates.
+    # `false` will produce "nodups" and "dups" (default), `true` will output "nodups" and empty 
+    # files in place of "dups".
+    keep_dups: false
+
 # Control how Hi-C pairs are binned into contact maps, stored in .cool files.
 bin:
     # Specify which resolutions should be included in the multi-resolution .cool file.
