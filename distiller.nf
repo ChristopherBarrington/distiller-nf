@@ -524,9 +524,58 @@ LIB_RUN_CHUNK_PAIRSAMS
     .groupTuple()
     .set {LIB_PAIRSAMS_TO_MERGE}
 
+process merge_split {
+    tag "library:${library}"
+    storeDir getOutputDir('pairs_library')
+
+    when: params['dedup'].get('keep_dups','false').toBoolean() == true
+
+    input:
+    set val(library), file(run_pairsam) from LIB_PAIRSAMS_TO_MERGE
+
+    output:
+    set library, "${library}.${ASSEMBLY_NAME}.nodups.pairs.gz",
+                 "${library}.${ASSEMBLY_NAME}.nodups.pairs.gz.px2",
+                 "${library}.${ASSEMBLY_NAME}.nodups.bam",
+                 "${library}.${ASSEMBLY_NAME}.dups.pairs.gz",
+                 "${library}.${ASSEMBLY_NAME}.dups.bam",
+                 "${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz",
+                 "${library}.${ASSEMBLY_NAME}.unmapped.bam" into LIB_PAIRS_BAMS
+    set library, "${library}.${ASSEMBLY_NAME}.dedup.stats" into LIB_DEDUP_STATS
+
+    script:
+    def merge_command = (
+        isSingleFile(run_pairsam) ?
+        "${decompress_command} ${run_pairsam}" :
+        "pairtools merge ${run_pairsam} --nproc ${task.cpus} --tmpdir \$TASK_TMP_DIR"
+    )
+
+    """
+    TASK_TMP_DIR=\$(mktemp -d -p ${task.distillerTmpDir} distiller.tmp.XXXXXXXXXX)
+
+    ${merge_command} | \
+    pairtools select \
+    --output ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz \
+    --output-rest ${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz \
+    '(chrom1!="!") and (chrom2!="!")'
+
+    pairtools stats --output ${library}.${ASSEMBLY_NAME}.dedup.stats ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
+
+    touch ${library}.${ASSEMBLY_NAME}.dups.pairs.gz
+    touch ${library}.${ASSEMBLY_NAME}.unmapped.bam
+    touch ${library}.${ASSEMBLY_NAME}.nodups.bam
+    touch ${library}.${ASSEMBLY_NAME}.dups.bam
+
+    rm -rf \$TASK_TMP_DIR
+    pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
+    """
+}
+
 process merge_dedup_splitbam {
     tag "library:${library}"
     storeDir getOutputDir('pairs_library')
+
+    when: params['dedup'].get('keep_dups','false').toBoolean() == false
 
     input:
     set val(library), file(run_pairsam) from LIB_PAIRSAMS_TO_MERGE
@@ -599,6 +648,7 @@ process merge_dedup_splitbam {
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
 }
+
 
 LIB_PAIRS_BAMS
     .map {v -> tuple(v[0], v[1])}
