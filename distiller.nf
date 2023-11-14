@@ -540,8 +540,8 @@ process merge_split {
                  "${library}.${ASSEMBLY_NAME}.dups.pairs.gz",
                  "${library}.${ASSEMBLY_NAME}.dups.bam",
                  "${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz",
-                 "${library}.${ASSEMBLY_NAME}.unmapped.bam" into LIB_PAIRS_BAMS
-    set library, "${library}.${ASSEMBLY_NAME}.dedup.stats" into LIB_DEDUP_STATS
+                 "${library}.${ASSEMBLY_NAME}.unmapped.bam" into LIB_PAIRS_BAMS_MERGED
+    set library, "${library}.${ASSEMBLY_NAME}.dedup.stats" into LIB_DEDUP_STATS_MERGED
 
     script:
     def merge_command = (
@@ -587,8 +587,8 @@ process merge_dedup_splitbam {
                  "${library}.${ASSEMBLY_NAME}.dups.pairs.gz",
                  "${library}.${ASSEMBLY_NAME}.dups.bam",
                  "${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz",
-                 "${library}.${ASSEMBLY_NAME}.unmapped.bam" into LIB_PAIRS_BAMS
-    set library, "${library}.${ASSEMBLY_NAME}.dedup.stats" into LIB_DEDUP_STATS
+                 "${library}.${ASSEMBLY_NAME}.unmapped.bam" into LIB_PAIRS_BAMS_DEDUP
+    set library, "${library}.${ASSEMBLY_NAME}.dedup.stats" into LIB_DEDUP_STATS_DEDUP
 
     script:
     def make_pairsam = params['parse'].get('make_pairsam','false').toBoolean()
@@ -649,6 +649,13 @@ process merge_dedup_splitbam {
         """
 }
 
+LIB_PAIRS_BAMS_MERGED
+    .concat(LIB_PAIRS_BAMS_DEDUP)
+    .set{ LIB_PAIRS_BAMS }
+
+LIB_DEDUP_STATS_MERGED
+    .concat(LIB_DEDUP_STATS_DEDUP)
+    .set{ LIB_DEDUP_STATS }
 
 LIB_PAIRS_BAMS
     .map {v -> tuple(v[0], v[1])}
