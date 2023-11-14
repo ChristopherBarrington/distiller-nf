@@ -550,6 +550,11 @@ process merge_dedup_splitbam {
     )
     def dedup_options = params['dedup'].get('dedup_options','')
 
+    def keep_dups = params['dedup'].get('keep_dups', 'false').toBoolean()
+    def pairix_merge_nodups_dups = ''
+    if(keep_dups)
+        pairix_merge_nodups_dups = "merge-pairs.sh merged ${library}.${ASSEMBLY_NAME}.{nodups,dups}.pairs.gz && rm ${library}.${ASSEMBLY_NAME}.{nodups,dups}.pairs.gz && mv merged.pairs.gz ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz && touch ${library}.${ASSEMBLY_NAME}.dups.pairs.gz"
+
     if(make_pairsam)
         """
         TASK_TMP_DIR=\$(mktemp -d -p ${task.distillerTmpDir} distiller.tmp.XXXXXXXXXX)
