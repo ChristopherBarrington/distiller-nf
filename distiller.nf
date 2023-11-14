@@ -522,7 +522,7 @@ process map_parse_sort_chunks {
 LIB_RUN_CHUNK_PAIRSAMS
     .map {library, run, chunk, pairsam, bam -> tuple(library, pairsam)}
     .groupTuple()
-    .set {LIB_PAIRSAMS_TO_MERGE,LIB_PAIRSAMS_TO_MERGE_DEDUP}
+    .into {LIB_PAIRSAMS_TO_MERGE;LIB_PAIRSAMS_TO_MERGE_DEDUP}
 
 process merge_split {
     tag "library:${library}"
