@@ -581,6 +581,7 @@ process merge_dedup_splitbam {
             | cat
 
         rm -rf \$TASK_TMP_DIR
+        ${pairix_merge_nodups_dups}
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
     else
@@ -601,6 +602,7 @@ process merge_dedup_splitbam {
         touch ${library}.${ASSEMBLY_NAME}.dups.bam
 
         rm -rf \$TASK_TMP_DIR
+        ${pairix_merge_nodups_dups}
         pairix ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
         """
 }
