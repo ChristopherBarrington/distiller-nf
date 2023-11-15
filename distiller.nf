@@ -559,7 +559,9 @@ process merge_split {
     --output-rest ${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz \
     '(chrom1!="!") and (chrom2!="!")'
 
-    pairtools stats --output ${library}.${ASSEMBLY_NAME}.dedup.stats ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
+    pairtools stats --output ${library}.${ASSEMBLY_NAME}.nodups.stats ${library}.${ASSEMBLY_NAME}.nodups.pairs.gz
+    pairtools stats --output ${library}.${ASSEMBLY_NAME}.unmapped.stats ${library}.${ASSEMBLY_NAME}.unmapped.pairs.gz
+    pairtools stats --output ${library}.${ASSEMBLY_NAME}.dedup.stats --merge ${library}.${ASSEMBLY_NAME}.nodups.stats ${library}.${ASSEMBLY_NAME}.unmapped.stats
 
     touch ${library}.${ASSEMBLY_NAME}.dups.pairs.gz
     touch ${library}.${ASSEMBLY_NAME}.unmapped.bam
